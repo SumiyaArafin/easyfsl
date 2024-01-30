@@ -1,0 +1,20 @@
+{
+    "class_names": [
+        "Happy",
+        "Anger",
+        "Fear",
+        "Disgust",
+        "Sad",
+        "Surprise",
+        "Neutral"
+    ],
+    "class_roots": [
+        "/content/Without_Augmentation/Happy/",
+        "/content/Without_Augmentation/Anger/",
+        "/content/Without_Augmentation/Fear/",
+        "/content/Without_Augmentation/Disgust/",
+        "/content/Without_Augmentation/Sad/",
+        "/content/Without_Augmentation/Surprise/",
+        "/content/Without_Augmentation/Neutral/"
+    ]
+}
