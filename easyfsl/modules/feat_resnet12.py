@@ -171,6 +171,23 @@ class FEATBasicBlock(nn.Module):
         out = self.dropout2(out)
 
 
+        out = self.conv2(out)
+        out = nn.MaxPool2d(2, stride=2)(out)
+        out = self.relu(out)
+        out = self.conv2(out)
+        out = nn.MaxPool2d(2, stride=2)(out)
+        out = self.relu(out)
+
+        
+        # self.localization = nn.Sequential(
+        #     nn.Conv2d(1, 8, kernel_size=7),
+        #     nn.MaxPool2d(2, stride=2),
+        #     nn.ReLU(True),
+        #     nn.Conv2d(8, 10, kernel_size=5),
+        #     nn.MaxPool2d(2, stride=2),
+        #     nn.ReLU(True)
+        # )
+
         if self.downsample is not None:
             residual = self.downsample(x)
         out += residual
@@ -228,7 +245,7 @@ class FEATResNet12(nn.Module):
             nn.ReLU(True),
             nn.Linear(32, 3 * 2)
         )
-
+        
 
 
         for module in self.modules():
@@ -239,6 +256,7 @@ class FEATResNet12(nn.Module):
             elif isinstance(module, nn.BatchNorm2d):
                 nn.init.constant_(module.weight, 1)
                 nn.init.constant_(module.bias, 0)
+    
     def stn(self, x):
         xs = self.localization(x)
         xs = xs.view(-1, 640)
