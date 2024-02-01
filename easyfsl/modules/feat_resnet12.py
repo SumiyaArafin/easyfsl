@@ -110,22 +110,15 @@ class FEATResNet12(nn.Module):
         )
         self.layer3 = self._make_layer(
             block,
-            320,
+            84,
             stride=2,
         )
 
         self.localization = self._make_localization_layer(
             block,
-            320,
+            84,
             stride=2,
         )
-
-        self.fc_loc = self._make_fc_layer(
-            block,
-            640,
-            stride=2,
-        )
-        
 
 
         for module in self.modules():
@@ -137,16 +130,6 @@ class FEATResNet12(nn.Module):
                 nn.init.constant_(module.weight, 1)
                 nn.init.constant_(module.bias, 0)
     
-    def stn(self, x):
-        xs = self.localization(x)
-        xs = xs.view(-1, 640)
-        theta = self.fc_loc(xs)
-        theta = theta.view(-1, 2, 3)
-
-        grid = nn.functional.affine_grid(theta, x.size())
-        x = nn.functional.grid_sample(x, grid)
-        return x
-
     def _make_localization_layer(self, block, planes, stride=1):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
@@ -185,27 +168,27 @@ class FEATResNet12(nn.Module):
 
         return nn.Sequential(*layers)
     
-    def _make_fc_layer(self, block, planes, stride=1):
-        downsample = None
-        if stride != 1 or self.inplanes != planes * block.expansion:
-            downsample = nn.Sequential(
-                nn.Linear(640, 32),
-                nn.ReLU(True),
-                nn.Linear(32, 3 * 2),
-            )
+    # def _make_fc_layer(self, block, planes, stride=1):
+    #     downsample = None
+    #     if stride != 1 or self.inplanes != planes * block.expansion:
+    #         downsample = nn.Sequential(
+    #             nn.Linear(640, 32),
+    #             nn.ReLU(True),
+    #             nn.Linear(32, 3 * 2),
+    #         )
 
-        layers = []
-        layers.append(
-            block(
-                self.inplanes,
-                planes,
-                stride,
-                downsample,
-            )
-        )
-        self.inplanes = planes * block.expansion
+    #     layers = []
+    #     layers.append(
+    #         block(
+    #             self.inplanes,
+    #             planes,
+    #             stride,
+    #             downsample,
+    #         )
+    #     )
+    #     self.inplanes = planes * block.expansion
 
-        return nn.Sequential(*layers)
+    #     return nn.Sequential(*layers)
 
     def _make_layer(self, block, planes, stride=1):
         downsample = None
