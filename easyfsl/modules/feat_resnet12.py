@@ -93,7 +93,7 @@ class FEATResNet12(nn.Module):
         self.inplanes = 3
         super().__init__()
 
-        channels = [64, 160, 320, 320, 640]
+        channels = [64, 160, 320, 320]
         self.layer_dims = [
             channels[i] * block.expansion for i in range(3) for j in range(3)
         ]
@@ -238,7 +238,7 @@ class FEATResNet12(nn.Module):
         """
         Iterate over the blocks and apply them sequentially.
         """
-        x = self.layer3(self.layer2(self.layer1(self.localization(self.fc_loc(x)))))
+        x = self.layer3(self.layer2(self.layer1(self.localization(x))))
         return x.mean((-2, -1))
 
 
