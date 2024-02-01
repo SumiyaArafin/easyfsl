@@ -221,7 +221,7 @@ class FEATResNet12(nn.Module):
         """
         Iterate over the blocks and apply them sequentially.
         """
-        x = self.layer1(self.layer3(self.layer2(self.localization(x))))
+        x = self.layer1(self.layer2(self.localization(self.layer3(x))))
         return x.mean((-2, -1))
 
 
