@@ -105,7 +105,7 @@ class FEATResNet12(nn.Module):
         )
         self.layer2 = self._make_layer(
             block,
-            160,
+            21,
             stride=2,
         )
         self.layer3 = self._make_layer(
@@ -221,7 +221,7 @@ class FEATResNet12(nn.Module):
         """
         Iterate over the blocks and apply them sequentially.
         """
-        x = self.localization(self.layer3(self.layer2(self.layer1(x))))
+        x = self.localization(self.layer1(self.layer3(self.layer2(x))))
         return x.mean((-2, -1))
 
 
