@@ -100,7 +100,7 @@ class FEATResNet12(nn.Module):
 
         self.layer1 = self._make_layer(
             block,
-            64,
+            3,
             stride=2,
         )
         self.layer2 = self._make_layer(
