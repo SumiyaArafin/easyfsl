@@ -8,7 +8,6 @@ Just remember that it is important to use the same backbone for a fair compariso
 from torch import nn
 from torchvision.models.resnet import conv3x3
 
-import math
 
 class FEATBasicBlock(nn.Module):
     """
@@ -27,13 +26,12 @@ class FEATBasicBlock(nn.Module):
         super().__init__()
         self.conv1 = conv3x3(inplanes, planes)
         self.bn1 = nn.BatchNorm2d(planes)
-        self.dropout1 = nn.Dropout(p=0.5)
         self.relu = nn.LeakyReLU(0.1)
         self.conv2 = conv3x3(planes, planes)
         self.bn2 = nn.BatchNorm2d(planes)
-        self.dropout2 = nn.Dropout(p=0.5)
+        self.conv3 = conv3x3(planes, planes)
+        self.bn3 = nn.BatchNorm2d(planes)
         self.maxpool = nn.MaxPool2d(stride)
-        
         self.downsample = downsample
 
     def forward(self, x):  # pylint: disable=invalid-name
@@ -45,31 +43,16 @@ class FEATBasicBlock(nn.Module):
 
         out = self.conv1(x)
         out = self.bn1(out)
-        out = self.dropout1(out)
 
         out = self.relu(out)
 
         out = self.conv2(out)
         out = self.bn2(out)
-        out = self.dropout2(out)
 
-
-        out = self.conv2(out)
-        out = nn.MaxPool2d(2, stride=2)(out)
-        out = self.relu(out)
-        out = self.conv2(out)
-        out = nn.MaxPool2d(2, stride=2)(out)
         out = self.relu(out)
 
-        
-        # self.localization = nn.Sequential(
-        #     nn.Conv2d(1, 8, kernel_size=7),
-        #     nn.MaxPool2d(2, stride=2),
-        #     nn.ReLU(True),
-        #     nn.Conv2d(8, 10, kernel_size=5),
-        #     nn.MaxPool2d(2, stride=2),
-        #     nn.ReLU(True)
-        # )
+        out = self.conv3(out)
+        out = self.bn3(out)
 
         if self.downsample is not None:
             residual = self.downsample(x)
@@ -85,7 +68,7 @@ class FEATResNet12(nn.Module):
     """
     ResNet12 for FEAT. See feat_resnet12 doc for more details.
     """
-    
+
     def __init__(
         self,
         block=FEATBasicBlock,
@@ -93,33 +76,31 @@ class FEATResNet12(nn.Module):
         self.inplanes = 3
         super().__init__()
 
-        channels = [3, 21, 84, 84]
+        channels = [64, 160, 320, 640]
         self.layer_dims = [
-            channels[i] * block.expansion for i in range(3) for j in range(3)
+            channels[i] * block.expansion for i in range(4) for j in range(4)
         ]
 
         self.layer1 = self._make_layer(
             block,
-            3,
+            64,
             stride=2,
         )
         self.layer2 = self._make_layer(
             block,
-            21,
+            160,
             stride=2,
         )
         self.layer3 = self._make_layer(
             block,
-            84,
+            320,
             stride=2,
         )
-
-        self.localization = self._make_localization_layer(
+        self.layer4 = self._make_layer(
             block,
-            84,
+            640,
             stride=2,
         )
-
 
         for module in self.modules():
             if isinstance(module, nn.Conv2d):
@@ -129,66 +110,6 @@ class FEATResNet12(nn.Module):
             elif isinstance(module, nn.BatchNorm2d):
                 nn.init.constant_(module.weight, 1)
                 nn.init.constant_(module.bias, 0)
-    
-    def _make_localization_layer(self, block, planes, stride=1):
-        downsample = None
-        if stride != 1 or self.inplanes != planes * block.expansion:
-            downsample = nn.Sequential(
-                nn.Conv2d(
-                    self.inplanes,
-                    planes * block.expansion,
-                    kernel_size=7,
-                    stride=1,
-                    bias=False,
-                ),
-                nn.MaxPool2d(2, stride=2),
-                nn.ReLU(True),
-                nn.Conv2d(
-                    self.inplanes,
-                    planes * block.expansion,
-                    kernel_size=5,
-                    stride=1,
-                    bias=False,
-                ),
-                nn.MaxPool2d(2, stride=2),
-                nn.ReLU(True),
-                nn.BatchNorm2d(planes * block.expansion),
-            )
-
-        layers = []
-        layers.append(
-            block(
-                self.inplanes,
-                planes,
-                stride,
-                downsample,
-            )
-        )
-        self.inplanes = planes * block.expansion
-
-        return nn.Sequential(*layers)
-    
-    # def _make_fc_layer(self, block, planes, stride=1):
-    #     downsample = None
-    #     if stride != 1 or self.inplanes != planes * block.expansion:
-    #         downsample = nn.Sequential(
-    #             nn.Linear(640, 32),
-    #             nn.ReLU(True),
-    #             nn.Linear(32, 3 * 2),
-    #         )
-
-    #     layers = []
-    #     layers.append(
-    #         block(
-    #             self.inplanes,
-    #             planes,
-    #             stride,
-    #             downsample,
-    #         )
-    #     )
-    #     self.inplanes = planes * block.expansion
-
-    #     return nn.Sequential(*layers)
 
     def _make_layer(self, block, planes, stride=1):
         downsample = None
@@ -221,7 +142,7 @@ class FEATResNet12(nn.Module):
         """
         Iterate over the blocks and apply them sequentially.
         """
-        x = self.layer1(self.layer2(self.localization(self.layer3(x))))
+        x = self.layer4(self.layer3(self.layer2(self.layer1(x))))
         return x.mean((-2, -1))
 
 
@@ -248,6 +169,3 @@ def feat_resnet12(**kwargs):
         The standard ResNet12 from FEAT model.
     """
     return FEATResNet12(FEATBasicBlock, **kwargs)
-
-
-
