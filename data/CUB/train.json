@@ -9,12 +9,12 @@
         "Neutral"
     ],
     "class_roots": [
-        "/content/Without_Augmentation/Happy/",
-        "/content/Without_Augmentation/Anger/",
-        "/content/Without_Augmentation/Fear/",
-        "/content/Without_Augmentation/Disgust/",
-        "/content/Without_Augmentation/Sad/",
-        "/content/Without_Augmentation/Surprise/",
-        "/content/Without_Augmentation/Neutral/"
+        "/content/Original_Annotated_Renamed/Happy/",
+        "/content/Original_Annotated_Renamed/Anger/",
+        "/content/Original_Annotated_Renamed/Fear/",
+        "/content/Original_Annotated_Renamed/Disgust/",
+        "/content/Original_Annotated_Renamed/Sad/",
+        "/content/Original_Annotated_Renamed/Surprise/",
+        "/content/Original_Annotated_Renamed/Neutral/"
     ]
 }
