@@ -214,7 +214,7 @@ class FEATResNet12(nn.Module):
         )
 
         if self.use_cbam:
-            self.cbam = CBAM(channel_in=channels[i]*self.expansion)
+            self.cbam = CBAM(channel_in=channels[-2]*self.expansion)
 
         for module in self.modules():
             if isinstance(module, nn.Conv2d):
